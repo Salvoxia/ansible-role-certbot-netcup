@@ -3,14 +3,14 @@
   hosts: all
   gather_facts: false
   tasks:
-    - name: Check if certbot is installed
+    - name: "Check if certbot is installed"
       ansible.builtin.command: which certbot
       changed_when: false
       become: true
       failed_when: certbot_install_check_result.rc not in [0, 1]
       register: certbot_install_check_result
 
-    - name: Evaluating check result
+    - name: "Evaluating check result"
       ansible.builtin.assert:
         that: "{{ certbot_install_check_result.rc in [0] }}"
         fail_msg: "Certbot is not installed!"
@@ -21,7 +21,15 @@
       ignore_errors: true
       changed_when: "netcup_check is failed"
 
-    - name: Evaluating check result
+    - name: "Evaluating check result"
       ansible.builtin.assert:
         that: netcup_check is not failed
         fail_msg: "certbot-dns-netcup not installed successfully!"
+
+    - name: "Verify pre hook script existing"
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/stop_services.sh"
+
+    - name: "Verify post hook script existing"
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/start_services.sh"

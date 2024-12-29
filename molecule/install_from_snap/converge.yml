@@ -1,5 +1,3 @@
 ---
 - name: "Install from snap"
-  vars:
-    certbot_install_method: "snap"
-  ansible.builtin.import_playbook: ../install_from_pkgmgr/converge.yml
+  ansible.builtin.import_playbook: ../install_from_pip/converge.yml

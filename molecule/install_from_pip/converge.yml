@@ -1,0 +1,17 @@
+---
+- name: "Converge"
+  hosts: all
+  become: true
+  vars:
+    certbot_netcup_customer_id: "123456"
+    certbot_netcup_api_key: "0123456789abcdef0123456789abcdef01234567"
+    certbot_netcup_api_password: "abcdef0123456789abcdef01234567abcdef0123"
+    # Issue the certificate as part of the playbook
+    certbot_netcup_create_if_missing: true
+    certbot_netcup_certs:
+      - domains:
+          - "*.example.com"
+        services:
+          - nginx
+  roles:
+    - role: "salvoxia.certbot_netcup"

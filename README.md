@@ -2,22 +2,30 @@
 
 An [Ansible](https://www.ansible.com) role to install [Certbot](https://certbot.eff.org/) and issue certificates with the DNS01 challenge by using Netcup's DNS servers.
 
+The role determines how Certbot is installed (via snap or not), install the [certbot-dns-netcup](https://pypi.org/project/certbot-dns-netcup/) authenticator using the appropriate way (pip or snap) and optionally issues certificates using the DNS01 challenge and Netcup's DNS servers.
 
 ## Requirements
 
 - Netcup DNS setup
 - Netcup API Key and Password
+- Certbot installed (e.g. via [geerlingguy.certbot](https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/certbot/))
 
 ## Dependencies
 
 - [geerlingguy.pip](https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/pip/)
-- [geerlingguy.certbot](https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/certbot/) (or some fork of it)
 - [community.general](https://galaxy.ansible.com/ui/repo/published/community/general/)
 
 Install dependencies with
 ```shell
 ansible-galaxy install -r requirements.yml
 ```
+
+## Disclaimer
+
+This role was inspired by [ansible-certbot-cloudflare](https://github.com/michaelpporter/ansible-role-certbot-cloudflare) by [Michael Porter](https://www.michaelpporter.com/).
+
+The task for generating certificates from Ansible was inspired by [geerlingguy.certbot](https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/certbot/).
+
 
 ## Role Variables
 
@@ -52,17 +60,50 @@ The path where to store the Netcup credentials for the Certbot DNS plugin. Usual
 # DNS propagation time for DNS plugin to wait until trying to verify the DNS challenge
 certbot_netcup_propagation_seconds: 1200
 ```
-
 The time to wait in seconds after creating the DNS TXT records for the new records to propagate so they can be verified.
 
 ```yaml
-certbot_certs:
-  - email: "admin@example3.com"
-    domains:
-      - *.example3.com
+# Decide whether certificates should be created in the play
+certbot_netcup_create_if_missing: false
+```
+Flag indicating whether certificates should be created as part of the playbook. The following role variables only have any effect if set to `true`:
+  - `certbot_netcup_certs`
+  - `certbot_netcup_admin_email`
+  - `certbot_netcup_testmode`
+  - `certbot_netcup_hsts`
+  - `certbot_netcup_create_extra_args`
+
+```yaml
+# Global email address used for ACME account creation if non is set per domain.
+# Any one of these must be set.
+certbot_netcup_admin_email: ""
+```
+Global mail address used for ACME account creation and certificate notifications. It is possible to set domain-specific mail addresses when defining the domains to create certificates for, which override this global address.
+If `certbot_netcup_create_if_missing` is `true`, either `certbot_netcup_admin_email` must be set to a valid mail address, or an email address must be provided for each domain explicitly.
+
+```yaml
+# List of certificates to create. Each entry in the dictionary will result in a separate certificate
+# based on the first domain in the list. For each domain a separate admin address may be specified. If
+# none is specified, certbot_netcup_admin_email is used.
+certbot_netcup_certs: []
+  # - domains:
+  #     - local.example.com
+  #     - *.local.example.com
+  #   email: admin@example.com
+  #   services:
+  #     - nginx
+  # - domains:
+  #     - example2.com
 ```
 
-The primary reason for using the `DNS01` challenge is to provision wildcard certificates. But of course this method can be used for non-wildcard certificates as well, if no webserver should be spun up.
+The primary reason for using the `DNS01` challenge is to provision wildcard certificates. But of course this method can be used for non-wildcard certificates as well, if no webserver should be spun up.  
+
+`certbot_netcup_certs` is a list of domain specifictions where each entry must at least have the `domains` attribute, listing all domains for which to request a certificate.  
+One certificate file will be created per entry in `certbot_netcup_certs`.
+
+`email` is an optional attribute only if `certbot_netcup_admin_email` is set. Otherwise it is mandatory.
+
+`services` is a list of services to stop before certificate renewal and start again after. From these services a shell script as `pre` and `post` hook is created.
 
 ```yaml
 certbot_cloudflare_acme_server: "{{ certbot_cloudflare_acme_test }}"
@@ -76,22 +117,22 @@ Let's Encrypt server to use, defaults to test.
 
 
 ```yaml
-# The base role for installing and configuring certbot. This role was developed
-# with geerlingguy.certbot v5.2.1, so any fork using the same role variable names and providing the task "create-cert-standalone.yml"
-# should work.
-certbot_netcup_certbot_base_role: "geerlingguy.certbot"
+# Extra arguments to pass to certbot when creating a certificate
+certbot_netcup_create_extra_args: ""
 ```
+Additional arguments to pass to `certbot` when creating certificates.
 
-The role to use for installing certbot in the first place.
-This role re-uses the following role variables from `geerlingguy.certbot`:
-- `certbot_create_standalone_stop_services`
-- `certbot_create_if_missing` 
-- `certbot_dir`
-- `certbot_install_method`
+```yaml
+# Passes --test-cert to certbot if true
+certbot_netcup_testmode: false
+```
+Enable test mode to only run a test request without actually creating certificates.
 
-This role expects the certbot role to build the certbot `create` command the same way `geerlingguy.certbot` does. It then explicitly calls
-the certbot rule's `create-cert-standalone.yml` task if  `certbot_create_if_missing` is set to `true`.
-If `certbot_install_method` is set to `snap`, the Netcup DNS plugin will be installed using Snap as well, otherwise it is installed using pip.
+```yaml
+# Passes --hsts to certbot if true
+certbot_netcup_hsts: false
+```
+Enable (HTTP Strict Transport Security) for the certificate generation.
 
 Example Playbook
 ----------------
@@ -104,12 +145,12 @@ Including an example of how to use your role (for instance, with variables passe
     certbot_netcup_customer_id: "123456"
     certbot_netcup_api_key: "0123456789abcdef0123456789abcdef01234567"
     certbot_netcup_api_password: "abcdef0123456789abcdef01234567abcdef0123"
-    certbot_admin_email: "mail@example3.com"
+    certbot_netcup_admin_email: "mail@example.com"
     # Issue the certificate as part of the playbook
-    certbot_create_if_missing: true
-    certbot_certs:
+    certbot_netcup_create_if_missing: true
+    certbot_netcup_certs:
         - domains:
-          - *.example3.com
+          - "*.example.com"
   roles:
       - salvoxia.certbot-netcup
 ```

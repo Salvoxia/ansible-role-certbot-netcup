@@ -11,15 +11,48 @@ certbot_netcup_api_password: ""
 certbot_netcup_credentials_path: "/etc/letsencrypt/netcup_credentials.ini"
 # DNS propagation time for DNS plugin to wait until trying to verify the DNS challenge
 certbot_netcup_propagation_seconds: 1200
-# The base role for installing and configuring certbot. This role was developed
-# with geerlingguy.certbot v5.2.1, so any fork using the same role variable names and providing the task "create-cert-standalone.yml"
-# should work.
-certbot_netcup_certbot_base_role: "geerlingguy.certbot"
 
-certbot_create_standalone_stop_services: []
-certbot_create_if_missing: true
+# Decide whether certificates should be created in the play
+certbot_netcup_create_if_missing: false
+# Global email address used for ACME account creation if non is set per domain.
+# Any one of these must be set.
+certbot_netcup_admin_email: ""
+# List of certificates to create. Each entry in the dictionary will result in a separate certificate
+# based on the first domain in the list. For each domain a separate admin address may be specified. If
+# none is specified, certbot_netcup_admin_email is used.
+certbot_netcup_certs: []
+  # - email: admin@example.com
+  #   services:
+  #     - nginx
+  #   domains:
+  #     - local.example.com
+  #     - *.local.example.com
+  # - domains:
+  #     - example3.com
+# Passes --test-cert to certbot if true
+certbot_netcup_testmode: false
+# Passes --hsts to certbot if true
+certbot_netcup_hsts: false
+# The command to use to create the certificate
+certbot_create_command: >-
+  certbot certonly --authenticator dns-netcup
+  --dns-netcup-credentials {{ certbot_netcup_credentials_path }}
+  --dns-netcup-propagation-seconds {{ certbot_netcup_propagation_seconds }}
+  {{ '--hsts' if certbot_netcup_hsts else '' }}
+  {{ '--test-cert' if certbot_netcup_testmode else '' }}
+  --noninteractive --agree-tos
+  --email {{ cert_item.email | default(certbot_netcup_admin_email) }}
+  {{ certbot_netcup_create_extra_args }}
+  -d {{ cert_item.domains | join(',') }}
+  {{ '--pre-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/stop_services.sh'
+    if cert_item.services is defined and cert_item.services
+  else '' }}
+  {{ '--post-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/stop_services.sh'
+    if cert_item.services is defined and cert_item.services
+  else '' }}
 
-certbot_dir: "/opt/certbot"
+# Extra arguments to pass to certbot when creating a certificate
+certbot_netcup_create_extra_args: ""
 
 # Use the ACME v2 staging URI for testing things
 certbot_netcup_acme_test: "https://acme-staging-v02.api.letsencrypt.org/directory"

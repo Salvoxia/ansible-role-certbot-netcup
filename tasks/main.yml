@@ -2,7 +2,7 @@
 - name: "Assert variables"
   ansible.builtin.include_tasks: assert.yml
 
-- name: Create certbot folder - sudouser
+- name: Create letsencrypt folder - sudouser
   ansible.builtin.file:
     path: "/etc/letsencrypt"
     state: directory
@@ -10,7 +10,7 @@
     group: root
     mode: "0700"
 
-- name: "Create Certbot and Netcup Configuration"
+- name: "Create Netcup Configuration"
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -20,17 +20,6 @@
   with_items:
     - src: "templates/netcup_credentials.ini.j2"
       dest: "{{ certbot_netcup_credentials_path }}"
-    - src: "templates/letsencrypt_cli.ini.j2"
-      dest: "/etc/letsencrypt/cli.ini"
-
-- name: "Remember certbot_create_if_missing setting"
-  ansible.builtin.set_fact:
-    certbot_netcup_create_if_missing: "{{ certbot_create_if_missing }}"
-    certbot_create_if_missing: false
-
-- name: "Install Certbot"
-  ansible.builtin.include_role:
-    name: "{{ certbot_netcup_certbot_base_role }}"
 
 - name: "Check if certbot-dns-netcup plugin is installed"
   ansible.builtin.shell: "certbot plugins | grep dns-netcup"
@@ -38,10 +27,50 @@
   ignore_errors: true
   changed_when: "netcup_check is failed"
 
+- name: "Determine Certbot installation method"
+  when: netcup_check is failed
+  block:
+    - name: "Check if Certbot is installed"
+      ansible.builtin.command: which certbot
+      changed_when: false
+      failed_when: certbot_install_check_result.rc not in [0, 1]
+      register: certbot_install_check_result
+
+    - name: "Check if snapd is installed"
+      ansible.builtin.command: which snap
+      changed_when: false
+      failed_when: snap_install_check_result.rc not in [0, 1]
+      register: snap_install_check_result
+      when:
+        - certbot_install_check_result.rc is defined
+        - certbot_install_check_result.rc == 0
+
+    - name: "Check if Certbot is installed via snap"
+      ansible.builtin.shell: "snap list | grep 'certbot '"
+      register: certbot_snap_check
+      ignore_errors: true
+      changed_when: "certbot_snap_check is failed"
+      when:
+        - snap_install_check_result.rc is defined
+        - snap_install_check_result.rc == 0
+
+    - name: "Set detected Certbot installation method"
+      ansible.builtin.set_fact:
+        certbot_netcup_installed_by: "{{ 'snap' if snap_install_check_result.rc is defined and snap_install_check_result.rc == 0 else 'other' }}"
+      when:
+        - certbot_install_check_result.rc is defined
+        - certbot_install_check_result.rc == 0
+
+- name: "Assert Certbot is actually installed"
+  ansible.builtin.assert:
+    that: certbot_netcup_installed_by is defined
+    fail_msg: "Certbot was not found on the target system!"
+  when: netcup_check is failed
+
 - name: "Install certbot-dns-netcup via pip"
   when:
     - netcup_check is failed
-    - certbot_install_method is not defined or certbot_install_method != 'snap'
+    - certbot_netcup_installed_by != 'snap'
   block:
     - name: "Install pip"
       ansible.builtin.include_role:
@@ -54,8 +83,7 @@
 - name: "Install certbot-dns-netcup via snap"
   when:
     - netcup_check is failed
-    - certbot_install_method is defined
-    - certbot_install_method == 'snap'
+    - certbot_netcup_installed_by == 'snap'
   become: true
   block:
     - name: "Install certbot-dns-netcup"
@@ -71,22 +99,10 @@
       ansible.builtin.command: "snap connect certbot:plugin certbot-dns-netcup"
       changed_when: false
 
-- name: "Set certbot required variables"
-  ansible.builtin.set_fact:
-    certbot_create_if_missing: "{{ certbot_netcup_create_if_missing }}"
-    certbot_create_method: "authenticator dns-netcup"
-    certbot_create_extra_args: "{{ certbot_create_extra_args | default('')
-        + ' --dns-netcup-credentials ' + certbot_netcup_credentials_path
-        + ' --dns-netcup-propagation-seconds ' + certbot_netcup_propagation_seconds | string }} -v"
-    certbot_create_standalone_stop_services: "{{ certbot_create_standalone_stop_services }}"
-
-- name: "Create Certs"
-  ansible.builtin.include_role:
-    name: "{{ certbot_netcup_certbot_base_role }}"
-    tasks_from: create-cert-standalone.yml
-  with_items: "{{ certbot_certs }}"
+- name: "Create certs"
+  ansible.builtin.include_tasks: create-cert.yml
+  with_items: "{{ certbot_netcup_certs }}"
   when:
-    - certbot_create_if_missing is defined
-    - certbot_create_if_missing
+    - certbot_netcup_create_if_missing
   loop_control:
     loop_var: cert_item
