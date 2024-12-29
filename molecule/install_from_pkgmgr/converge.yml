@@ -4,7 +4,7 @@
   become: true
   pre_tasks:
     - name: "Install dependencies (RedHat)."
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name:
           - cronie
           - epel-release
