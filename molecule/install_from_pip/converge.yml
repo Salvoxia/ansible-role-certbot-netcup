@@ -8,6 +8,7 @@
     certbot_netcup_api_password: "abcdef0123456789abcdef01234567abcdef0123"
     # Issue the certificate as part of the playbook
     certbot_netcup_create_if_missing: true
+    certbot_netcup_admin_email: "admin@example.com"
     certbot_netcup_certs:
       - domains:
           - "*.example.com"
