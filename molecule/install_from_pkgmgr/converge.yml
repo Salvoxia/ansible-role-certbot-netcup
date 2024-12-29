@@ -1,0 +1,27 @@
+---
+- name: "Converge"
+  hosts: all
+  become: true
+  pre_tasks:
+    - name: "Install dependencies (RedHat)."
+      ansible.builtin.yum:
+        name:
+          - cronie
+          - epel-release
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: "Install cron (Debian)."
+      ansible.builtin.apt:
+        name:
+          - cron
+        state: present
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+  vars:
+    certbot_auto_renew_user: "root"
+    certbot_netcup_customer_id: "123456"
+    certbot_netcup_api_key: "0123456789abcdef0123456789abcdef01234567"
+    certbot_netcup_api_password: "abcdef0123456789abcdef01234567abcdef0123"
+  roles:
+    - role: "salvoxia.certbot_netcup"

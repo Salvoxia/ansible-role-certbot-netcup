@@ -1,0 +1,7 @@
+---
+certbot_install_from_source: true
+certbot_create_method: "standalone"
+certbot_repo: https://github.com/certbot/certbot.git
+# Pin to fixed version
+certbot_version: master
+certbot_keep_updated: true

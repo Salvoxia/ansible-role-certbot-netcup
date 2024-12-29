@@ -1,0 +1,42 @@
+---
+- name: "Role Variable Assertions"
+  run_once: true
+  delegate_to: localhost
+  block:
+    - name: "Assert Netcup Credentials are provided"
+      ansible.builtin.assert:
+        that:
+          - certbot_netcup_customer_id is defined
+          - certbot_netcup_customer_id is string
+          - certbot_netcup_customer_id | length > 0
+          - certbot_netcup_api_key is defined
+          - certbot_netcup_api_key is string
+          - certbot_netcup_api_key | length > 0
+          - certbot_netcup_api_password is defined
+          - certbot_netcup_api_password is string
+          - certbot_netcup_api_password | length > 0
+        fail_msg: "certbot_netcup_customer_id, certbot_netcup_api_key and certbot_netcup_api_password must be non-empty strings!"
+
+    - name: "Assert Netcup Credentials path is provided"
+      ansible.builtin.assert:
+        that:
+          - certbot_netcup_credentials_path is defined
+          - certbot_netcup_credentials_path is string
+          - certbot_netcup_credentials_path | length > 0
+        fail_msg: "certbot_netcup_credentials_path must be a non-empty string!"
+
+    - name: "Assert an ACME server is provided"
+      ansible.builtin.assert:
+        that:
+          - certbot_netcup_acme_server is defined
+          - certbot_netcup_acme_server is string
+          - certbot_netcup_acme_server | length > 0
+        fail_msg: "certbot_netcup_acme_server must be a non-empty string!"
+
+    - name: "Assert Netcup Propagation Time is provided"
+      ansible.builtin.assert:
+        that:
+          - certbot_netcup_propagation_seconds is defined
+          - certbot_netcup_propagation_seconds is integer
+          - certbot_netcup_propagation_seconds > 0
+        fail_msg: "certbot_netcup_propagation_seconds must be a number greater than 0!"

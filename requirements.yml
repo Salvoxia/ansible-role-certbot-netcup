@@ -1,0 +1,9 @@
+---
+collections:
+  - name: community.general
+    version: ">=7.0.0"
+roles:
+  - name: geerlingguy.certbot
+    version: "5.2.1"
+  - name: geerlingguy.pip
+    version: "3.1.0"

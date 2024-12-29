@@ -1,0 +1,29 @@
+---
+# defaults file for certbot-netcup
+
+# Netcup customer ID
+certbot_netcup_customer_id: ""
+# Netcup API Key
+certbot_netcup_api_key: ""
+# Netcup API Password
+certbot_netcup_api_password: ""
+# Path where to store netcup credentials file
+certbot_netcup_credentials_path: "/etc/letsencrypt/netcup_credentials.ini"
+# DNS propagation time for DNS plugin to wait until trying to verify the DNS challenge
+certbot_netcup_propagation_seconds: 1200
+# The base role for installing and configuring certbot. This role was developed
+# with geerlingguy.certbot v5.2.1, so any fork using the same role variable names and providing the task "create-cert-standalone.yml"
+# should work.
+certbot_netcup_certbot_base_role: "geerlingguy.certbot"
+
+certbot_create_standalone_stop_services: []
+certbot_create_if_missing: true
+
+certbot_dir: "/opt/certbot"
+
+# Use the ACME v2 staging URI for testing things
+certbot_netcup_acme_test: "https://acme-staging-v02.api.letsencrypt.org/directory"
+# Production ACME v2 API endpoint
+certbot_netcup_acme_live: "https://acme-v02.api.letsencrypt.org/directory"
+
+certbot_netcup_acme_server: "{{ certbot_netcup_acme_test }}"

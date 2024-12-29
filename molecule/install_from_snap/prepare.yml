@@ -1,0 +1,27 @@
+---
+- name: "Prepare"
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install dependencies (Debian)."
+      ansible.builtin.apt:
+        name:
+          - snapd
+        state: present
+        update_cache: true
+      when: ansible_os_family in ['Debian', 'Ubuntu']
+
+    - name: "List service facts"
+      ansible.builtin.service_facts:
+
+    # This is required to work around an "too early for operations" error
+    # when using snapd directly after installation
+    - name: "Ensure snapd seeded service is restarted."
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+      when: "item in ansible_facts.services"
+      with_items:
+        - snapd.service
+        - snapd.seeded.service
+        - systemd-udevd.service

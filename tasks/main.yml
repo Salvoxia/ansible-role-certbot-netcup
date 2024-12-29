@@ -1,0 +1,92 @@
+---
+- name: "Assert variables"
+  ansible.builtin.include_tasks: assert.yml
+
+- name: Create certbot folder - sudouser
+  ansible.builtin.file:
+    path: "/etc/letsencrypt"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: "Create Certbot and Netcup Configuration"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0600"
+  with_items:
+    - src: "templates/netcup_credentials.ini.j2"
+      dest: "{{ certbot_netcup_credentials_path }}"
+    - src: "templates/letsencrypt_cli.ini.j2"
+      dest: "/etc/letsencrypt/cli.ini"
+
+- name: "Remember certbot_create_if_missing setting"
+  ansible.builtin.set_fact:
+    certbot_netcup_create_if_missing: "{{ certbot_create_if_missing }}"
+    certbot_create_if_missing: false
+
+- name: "Install Certbot"
+  ansible.builtin.include_role:
+    name: "{{ certbot_netcup_certbot_base_role }}"
+
+- name: "Check if certbot-dns-netcup plugin is installed"
+  ansible.builtin.shell: "certbot plugins | grep dns-netcup"
+  register: netcup_check
+  ignore_errors: true
+  changed_when: "netcup_check is failed"
+
+- name: "Install certbot-dns-netcup via pip"
+  when:
+    - netcup_check is failed
+    - certbot_install_method is not defined or certbot_install_method != 'snap'
+  block:
+    - name: "Install pip"
+      ansible.builtin.include_role:
+        name: geerlingguy.pip
+
+    - name: "Install certbot-dns-netcup via pip"
+      ansible.builtin.pip:
+        name: certbot-dns-netcup
+
+- name: "Install certbot-dns-netcup via snap"
+  when:
+    - netcup_check is failed
+    - certbot_install_method is defined
+    - certbot_install_method == 'snap'
+  become: true
+  block:
+    - name: "Install certbot-dns-netcup"
+      community.general.snap:
+        name: certbot-dns-netcup
+        classic: true
+
+    - name: "Trust snap certbot-dns-netcup"
+      ansible.builtin.command: "snap set certbot trust-plugin-with-root=ok"
+      changed_when: false
+
+    - name: "Connect certbot with certbot-dns-netcup"
+      ansible.builtin.command: "snap connect certbot:plugin certbot-dns-netcup"
+      changed_when: false
+
+- name: "Set certbot required variables"
+  ansible.builtin.set_fact:
+    certbot_create_if_missing: "{{ certbot_netcup_create_if_missing }}"
+    certbot_create_method: "authenticator dns-netcup"
+    certbot_create_extra_args: "{{ certbot_create_extra_args | default('')
+        + ' --dns-netcup-credentials ' + certbot_netcup_credentials_path
+        + ' --dns-netcup-propagation-seconds ' + certbot_netcup_propagation_seconds | string }} -v"
+    certbot_create_standalone_stop_services: "{{ certbot_create_standalone_stop_services }}"
+
+- name: "Create Certs"
+  ansible.builtin.include_role:
+    name: "{{ certbot_netcup_certbot_base_role }}"
+    tasks_from: create-cert-standalone.yml
+  with_items: "{{ certbot_certs }}"
+  when:
+    - certbot_create_if_missing is defined
+    - certbot_create_if_missing
+  loop_control:
+    loop_var: cert_item
