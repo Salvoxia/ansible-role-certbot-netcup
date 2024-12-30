@@ -14,5 +14,7 @@
           - "*.example.com"
         services:
           - nginx
+        deploy_hook_additional_content: |
+          echo "I am printed at deploy-time!"
   roles:
     - role: "salvoxia.certbot_netcup"

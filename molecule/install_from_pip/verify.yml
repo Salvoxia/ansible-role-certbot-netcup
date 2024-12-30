@@ -28,8 +28,12 @@
 
     - name: "Verify pre hook script existing"
       ansible.builtin.file:
-        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/stop_services.sh"
+        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/pre_hook.sh"
 
     - name: "Verify post hook script existing"
       ansible.builtin.file:
-        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/start_services.sh"
+        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/post_hook.sh"
+
+    - name: "Verify deploy hook script existing"
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/domain-renewal-hooks/example.com/deploy_hook.sh"

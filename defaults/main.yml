@@ -24,6 +24,10 @@ certbot_netcup_certs: []
   # - email: admin@example.com
   #   services:
   #     - nginx
+  #   pre_hook_additional_content: ""
+  #   post_hook_additional_content: ""
+  #   deploy_hook_additional_content: |
+  #     postfix reload
   #   domains:
   #     - local.example.com
   #     - *.local.example.com
@@ -44,11 +48,14 @@ certbot_create_command: >-
   --email {{ cert_item.email | default(certbot_netcup_admin_email) }}
   {{ certbot_netcup_create_extra_args }}
   -d {{ cert_item.domains | join(',') }}
-  {{ '--pre-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/stop_services.sh'
-    if cert_item.services is defined and cert_item.services
+  {{ '--pre-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/pre_hook.sh'
+    if (cert_item.services is defined and cert_item.services) or (cert_item.pre_hook_additional_content is defined and cert_item.pre_hook_additional_content | length > 0)
   else '' }}
-  {{ '--post-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/stop_services.sh'
-    if cert_item.services is defined and cert_item.services
+  {{ '--post-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/post_hook.sh'
+    if (cert_item.services is defined and cert_item.services) or (cert_item.post_hook_additional_content is defined and cert_item.post_hook_additional_content | length > 0)
+  else '' }}
+  {{ '--deploy-hook /etc/letsencrypt/domain-renewal-hooks/' + first_domain + '/deploy_hook.sh'
+    if cert_item.deploy_hook_additional_content is defined and cert_item.deploy_hook_additional_content | length > 0
   else '' }}
 
 # Extra arguments to pass to certbot when creating a certificate

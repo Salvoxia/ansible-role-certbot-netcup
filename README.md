@@ -96,6 +96,10 @@ certbot_netcup_certs: []
   #   email: admin@example.com
   #   services:
   #     - nginx
+  #   pre_hook_additional_content: ""
+  #   post_hook_additional_content: ""
+  #   deploy_hook_additional_content: |
+  #     postfix reload
   # - domains:
   #     - example2.com
 ```
@@ -108,6 +112,8 @@ One certificate file will be created per entry in `certbot_netcup_certs`.
 `email` is an optional attribute only if `certbot_netcup_admin_email` is set. Otherwise it is mandatory.
 
 `services` is a list of services to stop before certificate renewal and start again after. From these services a shell script as `pre` and `post` hook is created.
+
+`pre_hook_additional_content`, `post_hook_additional_content`, `deploy_hook_additional_content` are strings that represent additional content to be written to the corresponding hook shell scripts. This gives the flexibility to perform tasks other than starting or stopping services. The example above reloads the Postfix configfuration to refresh TLS certificates after renewal without Postfix downtime.
 
 ```yaml
 certbot_cloudflare_acme_server: "{{ certbot_cloudflare_acme_test }}"
