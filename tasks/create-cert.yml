@@ -55,7 +55,7 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services 
+  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services
         or certbot_netcup_domain_pre_hook_additional_content is defined and certbot_netcup_domain_pre_hook_additional_content | length > 0
 
 - name: "Create post hook script."
@@ -65,7 +65,7 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services 
+  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services
       or certbot_netcup_domain_post_hook_additional_content is defined and certbot_netcup_domain_post_hook_additional_content | length > 0
 
 - name: "Create deploy hook script."
@@ -75,7 +75,7 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services 
+  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services
       or certbot_netcup_domain_deploy_hook_additional_content is defined and certbot_netcup_domain_deploy_hook_additional_content | length > 0
 
 - name: 'Log certbot command'
