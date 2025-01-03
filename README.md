@@ -1,4 +1,4 @@
-# Ansible Role: cerbot_netcup
+# Ansible Role: certbot_netcup
 [![Build Status](https://img.shields.io/github/actions/workflow/status/salvoxia/ansible-role-certbot-netcup/ci.yml?label=molecule&logo=ansible&style=flat-square)](https://github.com/Salvoxia/ansible-role-certbot-netcup/actions/workflows/ci.yml)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/salvoxia/ansible-role-certbot-netcup?color=EE0000&label=release&logo=ansible&style=flat-square)](https://galaxy.ansible.com/ui/standalone/roles/salvoxia/certbot_netcup/)
 [![Ansible Galaxy Downloads](https://img.shields.io/badge/dynamic/json?color=blueviolet&label=Galaxy%20Downloads&logo=ansible&style=flat-square&query=%24.download_count&url=https%3A%2F%2Fgalaxy.ansible.com%2Fapi%2Fv1%2Froles%2F39857%2F%3Fformat%3Djson)](https://galaxy.ansible.com/ui/standalone/roles/salvoxia/certbot_netcup/)
