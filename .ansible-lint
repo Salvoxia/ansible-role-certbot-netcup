@@ -1,0 +1,4 @@
+# Due to https://github.com/ansible/ansible-lint/issues/4477
+exclude_paths:
+  - .cache/
+  - .ansible/

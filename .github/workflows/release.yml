@@ -26,8 +26,6 @@ jobs:
 
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
-        with:
-          working_directory: "${{ github.workspace }}"
 
   molecule:
     name: Molecule Tests
