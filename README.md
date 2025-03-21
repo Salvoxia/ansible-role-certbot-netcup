@@ -4,9 +4,7 @@
 [![Ansible Galaxy Downloads](https://img.shields.io/badge/dynamic/json?color=blueviolet&label=Galaxy%20Downloads&logo=ansible&style=flat-square&query=%24.download_count&url=https%3A%2F%2Fgalaxy.ansible.com%2Fapi%2Fv1%2Froles%2F39857%2F%3Fformat%3Djson)](https://galaxy.ansible.com/ui/standalone/roles/salvoxia/certbot_netcup/)
 [![MIT LIcense](https://img.shields.io/github/license/salvoxia/ansible-role-certbot-netcup?style=flat-square)](https://github.com/Salvoxia/ansible-role-certbot-netcup/blob/main/LICENSE)
 
-An [Ansible](https://www.ansible.com) role to install [Certbot](https://certbot.eff.org/) and issue certificates with the DNS01 challenge by using Netcup's DNS servers.
-
-The role determines how Certbot is installed (via snap or not), install the [certbot-dns-netcup](https://pypi.org/project/certbot-dns-netcup/) authenticator using the appropriate way (pip or snap) and optionally issues certificates using the DNS01 challenge and Netcup's DNS servers.
+An [Ansible](https://www.ansible.com) role that determines how Certbot is installed (via `snap` or via `pip`), installs the [certbot-dns-netcup](https://pypi.org/project/certbot-dns-netcup/) authenticator using the appropriate way (`pip` or `snap`) and optionally issues certificates using the DNS01 challenge and Netcup's DNS servers.
 
 ## Requirements
 
