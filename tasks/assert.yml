@@ -3,42 +3,42 @@
   run_once: true
   delegate_to: localhost
   block:
+    - name: "Assert Netcup Customer ID"
+      ansible.builtin.assert:
+        that:
+          - certbot_netcup_customer_id | string | length > 0
+          - certbot_netcup_customer_id | int > 0
+        fail_msg: "certbot_netcup_customer_id must be convertible to a positive integer!"
+
     - name: "Assert Netcup Credentials are provided"
       ansible.builtin.assert:
         that:
-          - certbot_netcup_customer_id is string
-          - certbot_netcup_customer_id | length > 0
-          - certbot_netcup_api_key is string
-          - certbot_netcup_api_key | length > 0
-          - certbot_netcup_api_password is string
-          - certbot_netcup_api_password | length > 0
-        fail_msg: "certbot_netcup_customer_id, certbot_netcup_api_key and certbot_netcup_api_password must be non-empty strings!"
+          - certbot_netcup_api_key | string | length > 0
+          - certbot_netcup_api_password | string | length > 0
+        fail_msg: "certbot_netcup_api_key and certbot_netcup_api_password must be non-empty strings!"
 
     - name: "Assert Netcup Credentials path is provided"
       ansible.builtin.assert:
         that:
-          - certbot_netcup_credentials_path is string
-          - certbot_netcup_credentials_path | length > 0
+          - certbot_netcup_credentials_path | string | length > 0
         fail_msg: "certbot_netcup_credentials_path must be a non-empty string!"
 
     - name: "Assert an ACME server is provided"
       ansible.builtin.assert:
         that:
-          - certbot_netcup_acme_server is string
-          - certbot_netcup_acme_server | length > 0
+          - certbot_netcup_acme_server | string | length > 0
         fail_msg: "certbot_netcup_acme_server must be a non-empty string!"
 
     - name: "Assert Netcup Propagation Time is provided"
       ansible.builtin.assert:
         that:
-          - certbot_netcup_propagation_seconds is integer
-          - certbot_netcup_propagation_seconds > 0
+          - certbot_netcup_propagation_seconds | int > 0
         fail_msg: "certbot_netcup_propagation_seconds must be a number greater than 0!"
 
     - name: "Assert at least one email is provided for each domain"
       ansible.builtin.assert:
         that:
-          - certbot_netcup_admin_email | length > 0 or item.email is defined and item.email is string and item.email | length > 0
+          - certbot_netcup_admin_email | string | length > 0 or item.email is defined and item.email | string | length > 0
         fail_msg: "No email address provided for domain {{ item.domains | first }} while certbot_netcup_admin_email is not set!"
       with_items: "{{ certbot_netcup_certs }}"
 

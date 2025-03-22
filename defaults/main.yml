@@ -41,7 +41,7 @@ certbot_netcup_hsts: false
 certbot_create_command: >-
   certbot certonly --authenticator dns-netcup
   --dns-netcup-credentials {{ certbot_netcup_credentials_path }}
-  --dns-netcup-propagation-seconds {{ certbot_netcup_propagation_seconds }}
+  --dns-netcup-propagation-seconds {{ certbot_netcup_propagation_seconds | int }}
   {{ '--hsts' if certbot_netcup_hsts else '' }}
   {{ '--test-cert' if certbot_netcup_testmode else '' }}
   --noninteractive --agree-tos
