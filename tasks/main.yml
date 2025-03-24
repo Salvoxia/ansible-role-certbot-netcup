@@ -56,7 +56,7 @@
 
     - name: "Set detected Certbot installation method"
       ansible.builtin.set_fact:
-        certbot_netcup_installed_by: "{{ 'snap' if snap_install_check_result.rc is defined and snap_install_check_result.rc == 0 else 'other' }}"
+        certbot_netcup_installed_by: "{{ 'snap' if certbot_snap_check.rc is defined and certbot_snap_check.rc == 0 else 'other' }}"
       when:
         - certbot_install_check_result.rc is defined
         - certbot_install_check_result.rc == 0
