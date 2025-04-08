@@ -40,6 +40,7 @@ certbot_netcup_hsts: false
 # The command to use to create the certificate
 certbot_create_command: >-
   certbot certonly --authenticator dns-netcup
+  --server {{ certbot_netcup_acme_server }}
   --dns-netcup-credentials {{ certbot_netcup_credentials_path }}
   --dns-netcup-propagation-seconds {{ certbot_netcup_propagation_seconds | int }}
   {{ '--hsts' if certbot_netcup_hsts else '' }}
