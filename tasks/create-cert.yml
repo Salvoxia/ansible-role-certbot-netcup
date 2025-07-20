@@ -77,7 +77,7 @@
     mode: "0750"
   when: certbot_netcup_domain_deploy_hook_additional_content is defined and certbot_netcup_domain_deploy_hook_additional_content | length > 0
 
-- name: 'Log certbot command'
+- name: "Log certbot command"
   ansible.builtin.debug:
     msg: '{{ certbot_create_command }}'
   when: not letsencrypt_cert.stat.exists
