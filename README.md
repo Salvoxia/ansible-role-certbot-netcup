@@ -98,6 +98,8 @@ certbot_netcup_certs: []
   #   post_hook_additional_content: ""
   #   deploy_hook_additional_content: |
   #     postfix reload
+  #   apply_deploy_hook: false
+  #   ignore_deploy_hook_errors: true
   # - domains:
   #     - example2.com
 ```
@@ -112,6 +114,9 @@ One certificate file will be created per entry in `certbot_netcup_certs`.
 `services` is a list of services to stop before certificate renewal and start again after. From these services a shell script as `pre` and `post` hook is created.
 
 `pre_hook_additional_content`, `post_hook_additional_content`, `deploy_hook_additional_content` are strings that represent additional content to be written to the corresponding hook shell scripts. This gives the flexibility to perform tasks other than starting or stopping services. The example above reloads the Postfix configfuration to refresh TLS certificates after renewal without Postfix downtime.
+
+`apply_deploy_hook` makes the role run the deploy hook if the certificate already exists. That way, an updated deploy hook (e.g. to copy the certificate to an additional, new location) can be applied as a prerequisite of installing additional software using that already-existing certificate.  
+By default, errors during execution of the deploy hook are ignored. This can be controlled by the paramter `ignore_deploy_hook_errors`.
 
 ```yaml
 certbot_cloudflare_acme_server: "{{ certbot_cloudflare_acme_test }}"

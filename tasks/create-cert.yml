@@ -86,3 +86,21 @@
   ansible.builtin.command: "{{ certbot_create_command }}"
   when: not letsencrypt_cert.stat.exists
   changed_when: false
+
+- name: "Run deploy hook if certificate already exists"
+  ansible.builtin.shell: >
+    RENEWED_LINEAGE=/etc/letsencrypt/live/{{ first_domain }}
+    RENEWED_DOMAINS="{{ cert_item.domains | join(' ') }}"
+    /etc/letsencrypt/domain-renewal-hooks/{{ first_domain }}/deploy_hook.sh
+  when:
+    - certbot_netcup_domain_deploy_hook_additional_content is defined
+    - certbot_netcup_domain_deploy_hook_additional_content | length > 0
+    - cert_item.apply_deploy_hook is defined
+    - cert_item.apply_deploy_hook
+    - letsencrypt_cert.stat.exists
+  changed_when: false
+  register: deploy_hook_result
+  failed_when:
+    - deploy_hook_result.rc != 0
+    - cert_item.ignore_deploy_hook_errors is defined
+    - not cert_item.ignore_deploy_hook_errors
