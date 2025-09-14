@@ -15,7 +15,7 @@
     owner: root
     group: root
     mode: "0755"
-  when: cert_item.services is defined and cert_item.services
+  when: cert_item.services is defined and cert_item.services | length > 0
         or cert_item.pre_hook_additional_content is defined and cert_item.pre_hook_additional_content | length > 0
         or cert_item.post_hook_additional_content is defined and cert_item.post_hook_additional_content | length > 0
         or cert_item.deploy_hook_additional_content is defined and cert_item.deploy_hook_additional_content | length > 0
@@ -25,7 +25,7 @@
     certbot_netcup_domain_services: "{{ cert_item.services }}"
   when:
     - cert_item.services is defined
-    - cert_item.services
+    - cert_item.services | length > 0
 
 - name: "Set domain pre hook additional content fact"
   ansible.builtin.set_fact:
@@ -55,7 +55,7 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services
+  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services | length > 0
         or certbot_netcup_domain_pre_hook_additional_content is defined and certbot_netcup_domain_pre_hook_additional_content | length > 0
 
 - name: "Create post hook script."
@@ -65,7 +65,7 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services
+  when: certbot_netcup_domain_services is defined and certbot_netcup_domain_services | length > 0
       or certbot_netcup_domain_post_hook_additional_content is defined and certbot_netcup_domain_post_hook_additional_content | length > 0
 
 - name: "Create deploy hook script."
@@ -75,7 +75,9 @@
     owner: root
     group: root
     mode: "0750"
-  when: certbot_netcup_domain_deploy_hook_additional_content is defined and certbot_netcup_domain_deploy_hook_additional_content | length > 0
+  when:
+    - certbot_netcup_domain_deploy_hook_additional_content is defined
+    - certbot_netcup_domain_deploy_hook_additional_content | length > 0
 
 - name: "Log certbot command"
   ansible.builtin.debug:
@@ -96,7 +98,7 @@
     - certbot_netcup_domain_deploy_hook_additional_content is defined
     - certbot_netcup_domain_deploy_hook_additional_content | length > 0
     - cert_item.apply_deploy_hook is defined
-    - cert_item.apply_deploy_hook
+    - cert_item.apply_deploy_hook | bool
     - letsencrypt_cert.stat.exists
   changed_when: false
   register: deploy_hook_result

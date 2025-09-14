@@ -103,6 +103,6 @@
   ansible.builtin.include_tasks: create-cert.yml
   with_items: "{{ certbot_netcup_certs }}"
   when:
-    - certbot_netcup_create_if_missing
+    - certbot_netcup_create_if_missing | bool
   loop_control:
     loop_var: cert_item
