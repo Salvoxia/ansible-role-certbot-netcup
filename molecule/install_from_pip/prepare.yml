@@ -20,15 +20,19 @@
     - name: "Install pip"
       ansible.builtin.include_role:
         name: geerlingguy.pip
+      vars:
+        # Required for molecule testing images to have an up-to-date pyopenssl
+        pip_install_packages:
+          - name: pyopenssl
+            state: latest
 
-    # Required for molecule testing images to have an up-to-date pyopenssl
-    - name: "Install pyopenssl"
-      ansible.builtin.pip:
-        name:
-          - pyopenssl
-        state: latest
-      tags:
-        - skip_ansible_lint
+    #- name: "Install pyopenssl"
+    #  ansible.builtin.pip:
+    #    name:
+    #      - pyopenssl
+    #    state: latest
+    #  tags:
+    #    - skip_ansible_lint
 
     - name: "Install Certbot from package manager"
       ansible.builtin.include_role:
