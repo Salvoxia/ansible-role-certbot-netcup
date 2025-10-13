@@ -56,9 +56,9 @@ jobs:
 
       - name: Install dependencies in venv and activate
         run: |
-          python -m venv .venv
+          python3 -m venv .venv
           source .venv/bin/activate
-          python -m pip install install ansible molecule "molecule-plugins[docker]"
+          python3 -m pip install install ansible molecule "molecule-plugins[docker]"
           echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
