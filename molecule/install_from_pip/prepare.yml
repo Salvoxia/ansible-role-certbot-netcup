@@ -31,7 +31,6 @@
         - skip_ansible_lint
       when:
         - ansible_os_family == 'Debian'
-        - ansible_facts['distribution_major_version'] | int < 12
 
     - name: "Install Certbot from package manager"
       ansible.builtin.include_role:
