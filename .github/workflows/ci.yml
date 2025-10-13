@@ -52,10 +52,15 @@ jobs:
       - name: Set up Python 3.
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.x'
 
-      - name: Install test dependencies.
-        run: pip3 install ansible molecule molecule-plugins[docker]
+      - name: Install dependencies in venv and activate
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install install ansible molecule "molecule-plugins[docker]"
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
       - name: Install ansible test dependencies
         run: ansible-galaxy install -r molecule/test_requirements.yml
