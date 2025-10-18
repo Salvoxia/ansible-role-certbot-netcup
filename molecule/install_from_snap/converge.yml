@@ -1,3 +1,0 @@
----
-- name: "Install from snap"
-  ansible.builtin.import_playbook: ../install_from_pip/converge.yml
