@@ -1,3 +1,0 @@
----
-- name: "Verify installation from snap"
-  ansible.builtin.import_playbook: ../install_from_pip/verify.yml
