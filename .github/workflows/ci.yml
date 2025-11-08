@@ -55,7 +55,7 @@ jobs:
           python-version: '3.14'
 
       - name: Install test dependencies.
-        run: pip3 install ansible-core>=2.20.0 molecule molecule-plugins[docker] --upgrade
+        run: pip3 install ansible-core>=2.20.0 molecule molecule-plugins[docker]
 
       - name: Install ansible test dependencies
         run: ansible-galaxy install -r molecule/test_requirements.yml
